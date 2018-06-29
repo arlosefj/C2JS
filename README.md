@@ -11,3 +11,10 @@ source ./emsdk_env.sh
 
 # example
 https://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/embind.html
+
+
+# RoadMap
+c++ to js
+class to js
+Mat as params
+grabcut algorithm
