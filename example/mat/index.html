@@ -52,6 +52,10 @@
       var buf = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
       Module.HEAPU8.set(imgData.data, buf);
       console.log(imgData.data);
+      console.log(Module.getValue(buf, "i8"));
+      console.log(Module.getValue(buf+1, "i8"));
+      console.log(Module.getValue(buf+2, "i8"));
+      console.log(Module.getValue(buf+3, "i8"));
 
       var res = Module._test0(buf, canvas.width, canvas.height);
       // var res = Module.ccall('test0', // name of C function
@@ -72,6 +76,10 @@
       //         ['number'], // argument types
       //         imgData); // arguments
       console.log(res);
+      console.log(Module.getValue(buf, "i8"));
+      console.log(Module.getValue(buf+1, "i8"));
+      console.log(Module.getValue(buf+2, "i8"));
+      console.log(Module.getValue(buf+3, "i8"));
       Module._free(buf);
     }
     

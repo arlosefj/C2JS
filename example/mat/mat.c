@@ -7,5 +7,6 @@ int test1(char *x) {
 }
 
 int test2(char *x) {
+  x[3] = 1;
   return x[3];
 }
