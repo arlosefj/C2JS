@@ -1,0 +1,81 @@
+<!doctype html>
+<head>
+    <style>
+        html, body {
+          padding: 0;
+          margin: 0;
+          text-align: center;
+          font-family: 'Open Sans', sans-serif;
+          font-size: 100%;
+          font-weight: 300;
+        }
+        h1 {
+          font-size: 1.2rem;
+        }
+        p {
+          font-size: 1rem;
+        }
+        .container {
+          margin: 0 auto 0 auto;
+          border: 1px solid black;
+          width: 578px;
+          height: 400px;
+        }
+      </style>
+</head>
+<html>
+  <body>
+      <div id="container" class="container">
+          <canvas id="canvas" class="canvas"></canvas>
+        </div>
+
+  <script src="mat.js"></script>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const container = document.getElementById('container');
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    var ctx = canvas.getContext('2d');
+    var imageObj = new Image();
+    var imgData;
+    imageObj.crossOrigin = "Anonymous";
+    imageObj.src = './test.jpg';
+    imageObj.onload = function() {
+      ctx.drawImage(imageObj, 0, 0);
+      imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      console.log(imgData);
+    }
+    
+
+    Module['onRuntimeInitialized'] = onRuntimeInitialized;
+    function onRuntimeInitialized() {
+      var buf = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+      Module.HEAPU8.set(imgData.data, buf);
+      console.log(imgData.data);
+
+      var res = Module._test0(buf, canvas.width, canvas.height);
+      // var res = Module.ccall('test0', // name of C function
+      //         'number', // return type
+      //         ['number', 'number', 'number'], // argument types
+      //         imgData); // arguments
+      console.log(res);
+      //res = Module._test1([buf]);
+      res = Module.ccall('test1', 'number', ['number'], [buf]);
+      // res = Module.ccall('test1', // name of C function
+      //         'number', // return type
+      //         ['number'], // argument types
+      //         imgData); // arguments
+      console.log(res);
+      res = Module._test2(buf);
+      // res = Module.ccall('test2', // name of C function
+      //         'number', // return type
+      //         ['number'], // argument types
+      //         imgData); // arguments
+      console.log(res);
+      Module._free(buf);
+    }
+    
+
+  </script>
+  </body>
+</html>

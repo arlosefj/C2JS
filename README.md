@@ -19,10 +19,8 @@ https://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javasc
 
 
 # RoadMap
-c++ to js
-
-class to js
-
-Mat as params
-
-grabcut algorithm
+* c++ to js
+* class to js
+* read image to c++
+https://github.com/kripken/emscripten/issues/492
+* grabcut algorithm

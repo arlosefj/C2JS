@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <script src="api_example.js"></script>
+  <script>
+    //var em_module = require('./api_example.js');
+    
+
+    Module['onRuntimeInitialized'] = onRuntimeInitialized;
+
+    function onRuntimeInitialized() {
+      Module._sayHi(); // direct calling works
+      Module.ccall("sayHi"); // using ccall etc. also work
+      console.log(Module._daysInWeek()); // values can be returned, etc.
+    }
+
+  </script>
+</html>
