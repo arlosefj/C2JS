@@ -3,19 +3,19 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Full web opencv grabcut</title>
+  <title>interact segmentation</title>
   <link rel="stylesheet" href="index.css">
   <script src="lib/jquery/jquery-3.2.0.min.js"></script>
   <script src="lib/bootstrap/js/bootstrap.min.js"></script>
   <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <script async defer src="lib/cv.js"></script>
+  <script async defer src="process.js"></script>
   <script defer src="index.js"></script>
 </head>
 
 <body>
 
   <div class="topBar">
-    <h1>Grabcut</h1>
+    <h1>Interact Segmentation</h1>
   </div>
 
   <div class="jumbotron">
@@ -40,7 +40,7 @@
             </div>
             <div class="col-md-5"> <button onClick="switchFgBg()" class="btn btn-primary" type="button">Switch</button></div>
             <div class="col-md-2"><button onClick="clearFg()" class="btn btn-primary" type="button">Clear</button></div>
-            <div class="col-md-2"><button onClick="grabCut()" class="btn btn-success" type="button">Extract foreground</button></div>
+            <div class="col-md-2"><button onClick="Segment()" class="btn btn-success" type="button">Extract foreground</button></div>
           </div>
         </p>
         <canvas id="canvas1" width="500" height="500"></canvas>

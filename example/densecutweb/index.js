@@ -1,10 +1,11 @@
-var Module = {};
+//var Module = {};
 var drag = false;
 var rect = {};
 var original_image;
 var clone_image;
 var mask;
 var canvas1;
+var canvas2;
 var IsFG = true;
 
 setCallbacks();
@@ -66,6 +67,7 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
+  /*
   var fgcolor =  new cv.Scalar(0,0,255);
   var bgcolor =  new cv.Scalar(0,255,0);
   if(drag)
@@ -77,6 +79,7 @@ function onMouseMove(e) {
       cv.circle(clone_image,[mousePos.x,mousePos.y], 5, bgcolor, -1, 8, 0);
     show_image(clone_image, "canvas1");
   }
+  */
   return ;
 }
 
@@ -113,11 +116,13 @@ function show_image(mat, canvas_id) {
 
 
 var scaleFactor;
+var imgData;
+var canvas;
 
 function onLoadImage(e) {
   var fileReturnPath = document.getElementsByClassName('form-control');
 
-  var canvas = document.getElementById('canvas1');
+  canvas = document.getElementById('canvas1');
   var canvasWidth = 500;
   var canvasHeight = 500;
   var ctx = canvas.getContext('2d');
@@ -138,24 +143,26 @@ function onLoadImage(e) {
     canvas.width = img.width * scaleFactor;
     canvas.height = img.height * scaleFactor;
     ctx.drawImage(img, 0, 0, img.width * scaleFactor, img.height * scaleFactor);
-    var img2 = cv.matFromArray(getInput(), 24); // 24 for rgba
-    original_image = new cv.Mat(); // Opencv likes RGB
-    mask = cv.Mat.zeros(canvas.height, canvas.width, cv.CV_8UC1);
-    //console.log(canvas.width);
-    //console.log(canvas.height);
-    cv.cvtColor(img2, original_image, cv.ColorConversionCodes.COLOR_RGBA2RGB.value, 0);
-    clone_image = original_image.clone();
-    img2.delete();
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    original_image = img;
+    clone_image = img;
+    mask = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+    //var img2 = cv.matFromArray(getInput(), 24); // 24 for rgba
+    //original_image = new cv.Mat(); // Opencv likes RGB
+    //mask = cv.Mat.zeros(canvas.height, canvas.width, cv.CV_8UC1);
+    //cv.cvtColor(img2, original_image, cv.ColorConversionCodes.COLOR_RGBA2RGB.value, 0);
+    //clone_image = original_image.clone();
+    //img2.delete();
   }
   img.src = url;
 }
 
-function getInput() {
-  var canvas = document.getElementById('canvas1');
-  var ctx = canvas.getContext('2d');
-  var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  return imgData;
-}
+// function getInput() {
+//   var canvas = document.getElementById('canvas1');
+//   var ctx = canvas.getContext('2d');
+//   imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+//   return imgData;
+// }
 
 function switchFgBg()
 {
@@ -165,6 +172,23 @@ function switchFgBg()
     IsFG = true;
 }
 
+function Segment()
+{
+    var buf = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+    Module.HEAPU8.set(imgData.data, buf);
+    
+    var res = Module._process(buf, buf, buf, canvas.width, canvas.height);
+
+    var canvas2 = document.getElementById('canvas2');
+    var ctx2 = canvas2.getContext('2d');
+    scaleFactor = Math.min((canvas2.width / clone_image.width), (canvas2.height / clone_image.height));
+    canvas2.width = clone_image.width * scaleFactor;
+    canvas2.height = clone_image.height * scaleFactor;
+    ctx2.drawImage(clone_image, 0, 0, clone_image.width * scaleFactor, clone_image.height * scaleFactor);
+    Module._free(buf);
+    Module._free(mask);
+}
+/*
 function grabCut() {
   var result = new cv.Mat();
   var bgdModel = new cv.Mat();
@@ -217,3 +241,4 @@ function downloadImage() {
   a.href = document.getElementById("canvas2").toDataURL();
   a.download = 'screenshot.png';
 }
+*/
