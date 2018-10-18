@@ -1,8 +1,8 @@
 //var Module = {};
 var drag = false;
 var rect = {};
-var original_image;
-var clone_image;
+// var original_image;
+// var clone_image;
 var mask;
 var canvas1;
 var canvas2;
@@ -67,19 +67,28 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
-  /*
-  var fgcolor =  new cv.Scalar(0,0,255);
-  var bgcolor =  new cv.Scalar(0,255,0);
+  var canvas=document.getElementById("canvas1");
+  var cxt=canvas.getContext("2d")
   if(drag)
   {
     var mousePos = getMousePos(e);
-    if(IsFG)
-      cv.circle(clone_image,[mousePos.x,mousePos.y], 5, fgcolor, -1, 8, 0);
+    if(IsFG){
+      cxt.beginPath();
+      cxt.arc(mousePos.x,mousePos.y,5,0,360,false);
+      cxt.fillStyle="green";
+      cxt.fill();
+      cxt.closePath();
+    }
     else
-      cv.circle(clone_image,[mousePos.x,mousePos.y], 5, bgcolor, -1, 8, 0);
-    show_image(clone_image, "canvas1");
+    {
+      cxt.beginPath();
+      cxt.arc(mousePos.x,mousePos.y,5,0,360,false);
+      cxt.fillStyle="blue";
+      cxt.fill();
+      cxt.closePath();
+    }
   }
-  */
+  
   return ;
 }
 
@@ -127,14 +136,13 @@ function onLoadImage(e) {
   var canvasHeight = 500;
   var ctx = canvas.getContext('2d');
 
-  if (original_image) {
-    // clear data first
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    var canvas2 = document.getElementById('canvas2');
-    var ctx2 = canvas2.getContext('2d');
-    ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-
-  }
+  // if (original_image) {
+  //   // clear data first
+  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //   var canvas2 = document.getElementById('canvas2');
+  //   var ctx2 = canvas2.getContext('2d');
+  //   ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+  // }
 
   var url = URL.createObjectURL(e.target.files[0]);
   var img = new Image();
@@ -144,9 +152,10 @@ function onLoadImage(e) {
     canvas.height = img.height * scaleFactor;
     ctx.drawImage(img, 0, 0, img.width * scaleFactor, img.height * scaleFactor);
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    original_image = img;
-    clone_image = img;
-    mask = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+    mask = ctx.createImageData(canvas.width, canvas.height);
+    //original_image = img;
+    //clone_image = img;
+    //mask = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
     //var img2 = cv.matFromArray(getInput(), 24); // 24 for rgba
     //original_image = new cv.Mat(); // Opencv likes RGB
     //mask = cv.Mat.zeros(canvas.height, canvas.width, cv.CV_8UC1);
@@ -174,19 +183,43 @@ function switchFgBg()
 
 function Segment()
 {
-    var buf = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
-    Module.HEAPU8.set(imgData.data, buf);
-    
-    var res = Module._process(buf, buf, buf, canvas.width, canvas.height);
-
     var canvas2 = document.getElementById('canvas2');
     var ctx2 = canvas2.getContext('2d');
-    scaleFactor = Math.min((canvas2.width / clone_image.width), (canvas2.height / clone_image.height));
-    canvas2.width = clone_image.width * scaleFactor;
-    canvas2.height = clone_image.height * scaleFactor;
-    ctx2.drawImage(clone_image, 0, 0, clone_image.width * scaleFactor, clone_image.height * scaleFactor);
-    Module._free(buf);
-    Module._free(mask);
+    var res = ctx2.createImageData(canvas.width, canvas.height);
+    mask.data.set(imgData.data);
+    res.data.set(imgData.data);
+    //Module.HEAPU8.set(imgData.data, mask.data);
+    //Module.HEAPU8.set(imgData.data, res.data);
+    var step = canvas.width*4;
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxx');
+    for (var x = 0; x < canvas.height; x++) {
+      for (var y = 0; y < canvas.width; y++) {
+        if (imgData.data[x * step + 4 * y]==0&&imgData.data[x * step + 4 * y + 1]==255&&imgData.data[x * step + 4 * y + 2]==0) {
+          mask[x*canvas.width + y] = 1;
+        }
+        else if (imgData.data[x * step + 4 * y]==0&&imgData.data[x * step + 4 * y + 1]==0&&imgData.data[x * step + 4 * y + 2]==255) 
+        {
+          mask[x*canvas.width + y] = 0;
+        }
+        else
+        {
+          mask[x*canvas.width + y] = 2;
+        }
+      }
+    }
+    console.log(imgData);
+    console.log(mask);
+    console.log(res);
+    console.log('xxxxxxxxxxggggggggxxxxxxxxxxxxxx');
+    var aa = Module._process(imgData.data, mask.data, res.data, canvas.width, canvas.height);
+
+    console.log(aa);
+    //scaleFactor = Math.min((canvas2.width / clone_image.width), (canvas2.height / clone_image.height));
+    //canvas2.width = clone_image.width * scaleFactor;
+    //canvas2.height = clone_image.height * scaleFactor;
+    ctx2.putImageData(res, 0, 0);
+    console.log('xxxxxxxxxxxxeeeeeeeeeeeeeexxxxxxxxxxxx');
+    //ctx2.drawImage(clone_image, 0, 0, clone_image.width * scaleFactor, clone_image.height * scaleFactor);
 }
 /*
 function grabCut() {
