@@ -137,11 +137,16 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 		fore1f[i] = prob[1]/(prob[0]+prob[1]+1e-20f);
 
 	/****** Result ******/
-	for(int i=0; i<size; i++)
-	{
-		mask1u8[i] = fore1f[i]>0.5? MaskFG:MaskBG;
-		//mask1u8[i] = mask1s32[i]==(int)UserBack?MaskBG:MaskFG;
-	}
+	for(int j=0; j<height; j++)
+		for(int i=0; i<width; i++)
+		{
+			mask1u8[i+j*width] = fore1f[i+j*width]>0.5? MaskFG:MaskBG;
+			if(mask1s32[i+j*width] == UserBack)
+				mask1u8[i+j*width] = MaskBG;
+			if(mask1s32[i+j*width] == UserFore)
+				mask1u8[i+j*width] = MaskFG;
+			//mask1u8[i] = mask1s32[i]==(int)UserBack?MaskBG:MaskFG;
+		}
 
 	delete []img3f;
 	delete []back1f;
