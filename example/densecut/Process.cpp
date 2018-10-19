@@ -80,7 +80,6 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 	
 	int * mask1s32 = new int[size];
 
-
 	// temp segment val usr labeled background 1 other 0 
 	float * back1f = new float[size]; 
 	for(int j=0; j<height; j++)
@@ -94,7 +93,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 			else
 			{
 				back1f[i+j*width] = 0.0f;
-				mask1s32[i+j*width] = TrimapUnknown;
+				mask1s32[i+j*width] = ProbBack;
 			}
 				
 		}
@@ -141,7 +140,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 	for(int i=0; i<size; i++)
 	{
 		mask1u8[i] = back1f[i]>0.5? MaskFG:MaskBG;
-		//mask1u8[i] = MaskBG;
+		//mask1u8[i] = mask1s32[i]==(int)UserBack?MaskBG:MaskFG;
 	}
 
 	delete []img3f;

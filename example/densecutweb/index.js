@@ -60,9 +60,9 @@ function onMouseMove(e) {
         {
           if(Math.sqrt(i*i+j*j)<=Radius)
           {
-            var ii=Math.max(0, Math.min(mousePos.y+j,canvas.height-1));
-            var jj=Math.max(0, Math.min(mousePos.x+j,canvas.width-1));
-            imgData.data[jj+ii*canvas.width*4+3] = MaskFG;
+            var ii=Math.floor(Math.max(0, Math.min(mousePos.y+i,canvas.height-1)));
+            var jj=Math.floor(Math.max(0, Math.min(mousePos.x+j,canvas.width-1)));
+            imgData.data[4*jj+ii*canvas.width*4+3] = MaskFG;
           }
             
         }
@@ -79,9 +79,9 @@ function onMouseMove(e) {
         {
           if(Math.sqrt(i*i+j*j)<=Radius)
           {
-            var ii=Math.max(0, Math.min(mousePos.y+j,canvas.height-1));
-            var jj=Math.max(0, Math.min(mousePos.x+j,canvas.width-1));
-            imgData.data[jj+ii*canvas.width*4+3] = MaskBG;
+            var ii=Math.floor(Math.max(0, Math.min(mousePos.y+i,canvas.height-1)));
+            var jj=Math.floor(Math.max(0, Math.min(mousePos.x+j,canvas.width-1)));
+            imgData.data[4*jj+ii*canvas.width*4+3] = MaskBG;
           }
             
         }
@@ -185,10 +185,14 @@ function Segment()
       {
         var label = Module.getValue(mask+x+y*canvas.width, "i8");
         if(label==MaskBG)
+        {
           res.data[4*x+y*canvas.width*4+3] = 0;
+        }
+          
       }
 
     console.log(aa);
+    console.log(Module.getValue(mask+10, "i8"));
     ctx2.putImageData(res, 0, 0);
     Module._free(buf);
     Module._free(mask);
