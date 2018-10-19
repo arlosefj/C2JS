@@ -1,12 +1,18 @@
-//var Module = {};
+
 var drag = false;
 var rect = {};
-// var original_image;
-// var clone_image;
-var mask;
 var canvas1;
 var canvas2;
 var IsFG = true;
+
+var scaleFactor;
+var imgData;
+var canvas;
+var cloneData;
+
+let Radius = 5;
+let MaskBG = 126;
+let MaskFG = 127;
 
 setCallbacks();
 
@@ -20,35 +26,6 @@ function setCallbacks() {
   canvas1.addEventListener("mousedown", onMouseDown, false);
   canvas1.addEventListener("mousemove", onMouseMove, false);
 }
-
-/*
-function onMouseUp(e) {
-  drag = false;
-}
-
-function onMouseDown(e) {
-  var mousePos = getMousePos(e);
-  rect.startX = mousePos.x;
-  rect.startY = mousePos.y;
-  drag = true;
-}
-
-function onMouseMove(e) {
-  if (drag) {
-    var mousePos = getMousePos(e);
-    rect.w = mousePos.x - rect.startX;
-    rect.h = mousePos.y - rect.startY;
-    if (rect.w && rect.h && rect.startX && rect.startY) {
-      var p1 = [rect.startX, rect.startY];
-      var p2 = [p1[0] + rect.w, p1[1] + rect.h];
-      var color = new cv.Scalar(255, 0, 0);
-      var imgWithRect = original_image.clone();
-      cv.rectangle(imgWithRect, p1, p2, color, 2, 8, 0);
-      show_image(imgWithRect, "canvas1");
-    }
-  }
-}
-*/
 
 function getMousePos(evt) {
   var rect = canvas1.getBoundingClientRect();
@@ -74,18 +51,40 @@ function onMouseMove(e) {
     var mousePos = getMousePos(e);
     if(IsFG){
       cxt.beginPath();
-      cxt.arc(mousePos.x,mousePos.y,5,0,360,false);
+      cxt.arc(mousePos.x,mousePos.y,Radius,0,360,false);
       cxt.fillStyle="green";
       cxt.fill();
       cxt.closePath();
+      for(var i=-1*Radius;i<Radius+1;i++)
+        for(var j=-1*Radius;j<Radius+1;j++)
+        {
+          if(Math.sqrt(i*i+j*j)<=Radius)
+          {
+            var ii=Math.max(0, Math.min(mousePos.y+j,canvas.height-1));
+            var jj=Math.max(0, Math.min(mousePos.x+j,canvas.width-1));
+            imgData.data[jj+ii*canvas.width*4+3] = MaskFG;
+          }
+            
+        }
     }
     else
     {
       cxt.beginPath();
-      cxt.arc(mousePos.x,mousePos.y,5,0,360,false);
+      cxt.arc(mousePos.x,mousePos.y,Radius,0,360,false);
       cxt.fillStyle="blue";
       cxt.fill();
       cxt.closePath();
+      for(var i=-1*Radius;i<Radius+1;i++)
+        for(var j=-1*Radius;j<Radius+1;j++)
+        {
+          if(Math.sqrt(i*i+j*j)<=Radius)
+          {
+            var ii=Math.max(0, Math.min(mousePos.y+j,canvas.height-1));
+            var jj=Math.max(0, Math.min(mousePos.x+j,canvas.width-1));
+            imgData.data[jj+ii*canvas.width*4+3] = MaskBG;
+          }
+            
+        }
     }
   }
   
@@ -124,9 +123,6 @@ function show_image(mat, canvas_id) {
 }
 
 
-var scaleFactor;
-var imgData;
-var canvas;
 
 function onLoadImage(e) {
   var fileReturnPath = document.getElementsByClassName('form-control');
@@ -152,26 +148,11 @@ function onLoadImage(e) {
     canvas.height = img.height * scaleFactor;
     ctx.drawImage(img, 0, 0, img.width * scaleFactor, img.height * scaleFactor);
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    mask = ctx.createImageData(canvas.width, canvas.height);
-    //original_image = img;
-    //clone_image = img;
-    //mask = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
-    //var img2 = cv.matFromArray(getInput(), 24); // 24 for rgba
-    //original_image = new cv.Mat(); // Opencv likes RGB
-    //mask = cv.Mat.zeros(canvas.height, canvas.width, cv.CV_8UC1);
-    //cv.cvtColor(img2, original_image, cv.ColorConversionCodes.COLOR_RGBA2RGB.value, 0);
-    //clone_image = original_image.clone();
-    //img2.delete();
+    cloneData = ctx.createImageData(canvas.width, canvas.height);
+    cloneData.data.set(imgData.data);
   }
   img.src = url;
 }
-
-// function getInput() {
-//   var canvas = document.getElementById('canvas1');
-//   var ctx = canvas.getContext('2d');
-//   imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-//   return imgData;
-// }
 
 function switchFgBg()
 {
@@ -186,40 +167,31 @@ function Segment()
     var canvas2 = document.getElementById('canvas2');
     var ctx2 = canvas2.getContext('2d');
     var res = ctx2.createImageData(canvas.width, canvas.height);
-    mask.data.set(imgData.data);
-    res.data.set(imgData.data);
-    //Module.HEAPU8.set(imgData.data, mask.data);
-    //Module.HEAPU8.set(imgData.data, res.data);
-    var step = canvas.width*4;
-    console.log('xxxxxxxxxxxxxxxxxxxxxxxx');
-    for (var x = 0; x < canvas.height; x++) {
-      for (var y = 0; y < canvas.width; y++) {
-        if (imgData.data[x * step + 4 * y]==0&&imgData.data[x * step + 4 * y + 1]==255&&imgData.data[x * step + 4 * y + 2]==0) {
-          mask[x*canvas.width + y] = 1;
-        }
-        else if (imgData.data[x * step + 4 * y]==0&&imgData.data[x * step + 4 * y + 1]==0&&imgData.data[x * step + 4 * y + 2]==255) 
-        {
-          mask[x*canvas.width + y] = 0;
-        }
-        else
-        {
-          mask[x*canvas.width + y] = 2;
-        }
-      }
-    }
+    var mask = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+    var buf = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+    Module.HEAPU8.set(imgData.data, buf);
+
+    res.data.set(cloneData.data);
+
     console.log(imgData);
+    console.log(cloneData);
     console.log(mask);
-    console.log(res);
-    console.log('xxxxxxxxxxggggggggxxxxxxxxxxxxxx');
-    var aa = Module._process(imgData.data, mask.data, res.data, canvas.width, canvas.height);
+    console.log(buf);
+    
+    var aa = Module._process(buf, mask, canvas.width, canvas.height);
+
+    for(var y=0; y<canvas.height; y++)
+      for(var x=0; x<canvas.width; x++)
+      {
+        var label = Module.getValue(mask+x+y*canvas.width, "i8");
+        if(label==MaskBG)
+          res.data[4*x+y*canvas.width*4+3] = 0;
+      }
 
     console.log(aa);
-    //scaleFactor = Math.min((canvas2.width / clone_image.width), (canvas2.height / clone_image.height));
-    //canvas2.width = clone_image.width * scaleFactor;
-    //canvas2.height = clone_image.height * scaleFactor;
     ctx2.putImageData(res, 0, 0);
-    console.log('xxxxxxxxxxxxeeeeeeeeeeeeeexxxxxxxxxxxx');
-    //ctx2.drawImage(clone_image, 0, 0, clone_image.width * scaleFactor, clone_image.height * scaleFactor);
+    Module._free(buf);
+    Module._free(mask);
 }
 /*
 function grabCut() {

@@ -56,35 +56,62 @@ void fitGMMs(float * img3f, float * back1f, float * unary2f, int * mask1s32, CmG
 	return ;
 }
 
-int process(uint8 * img3u8, int * mask1s32, uint8 * result1u8, int width, int height)
+const uint8 MaskBG = 126;
+const uint8 MaskFG = 127;
+
+int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 {
-	#if 0
+	#if 1
 	/****** Preprocess ******/
 	const int size = width*height;
 	// image data as float
 	float * img3f = new float[size*3]; 
-	for(int i=0; i<size*3; i++)
-	{
-		img3f[i] = img3u8[i]/255.0;
-	}
+	uint8 * img3u8 = new uint8[size*3];
+	for(int j=0; j<height; j++)
+		for(int i=0; i<width; i++)
+		{
+			img3u8[i*3+j*width*3] = img4u8[i*4+j*width*4];
+			img3u8[i*3+1+j*width*3] = img4u8[i*4+1+j*width*4];
+			img3u8[i*3+2+j*width*3] = img4u8[i*4+2+j*width*4];
+			img3f[i*3+j*width*3] = img4u8[i*4+j*width*4]/255.0;
+			img3f[i*3+1+j*width*3] = img4u8[i*4+1+j*width*4]/255.0;
+			img3f[i*3+2+j*width*3] = img4u8[i*4+2+j*width*4]/255.0;
+		}
+	
+	int * mask1s32 = new int[size];
+
+
 	// temp segment val usr labeled background 1 other 0 
 	float * back1f = new float[size]; 
-	for(int i=0; i<size; i++)
-	{
-		if(mask1s32[i]==UserBack)
-			back1f[i] = 1.0f;
-		else
-			back1f[i] = 0.0f;
-	}
+	for(int j=0; j<height; j++)
+		for(int i=0; i<width; i++)
+		{
+			if(img4u8[i*4+3+j*width*4]==MaskBG)
+			{
+				back1f[i+j*width] = 1.0f;
+				mask1s32[i+j*width] = UserBack;
+			}
+			else
+			{
+				back1f[i+j*width] = 0.0f;
+				mask1s32[i+j*width] = TrimapUnknown;
+			}
+				
+		}
+
 	// temp segment val usr labeled background 0 other 1 
 	float * fore1f = new float[size]; 
-	for(int i=0; i<size; i++)
-	{
-		if(mask1s32[i]==UserBack)
-			fore1f[i] = 0.0f;
-		else
-			fore1f[i] = 1.0f;
-	}
+	for(int j=0; j<height; j++)
+		for(int i=0; i<width; i++)
+		{
+			if(img4u8[i*4+3+j*width*4]==MaskFG)
+			{
+				fore1f[i+j*width] = 1.0f;
+				mask1s32[i+j*width] = UserFore;
+			}
+			else
+				back1f[i+j*width] = 0.0f;
+		}
 	// temp unary
 	float * unary2f = new float[size*2];
 	for(int i=0; i<size*2; i++)
@@ -113,18 +140,21 @@ int process(uint8 * img3u8, int * mask1s32, uint8 * result1u8, int width, int he
 	/****** Result ******/
 	for(int i=0; i<size; i++)
 	{
-		result1u8[i] = back1f[i]>0.5? 255:0;
+		mask1u8[i] = back1f[i]>0.5? MaskFG:MaskBG;
+		//mask1u8[i] = MaskBG;
 	}
 
 	delete []img3f;
 	delete []back1f;
 	delete []fore1f;
 	delete []unary2f;
+	delete []img3u8;
+	delete []mask1s32;
 	
 	
-	return 0;
+	return mask1u8[10];
 	#else
-	return img3u8[0];
+	return 0;
 	#endif
 }
 }
