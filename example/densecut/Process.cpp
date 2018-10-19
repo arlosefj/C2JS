@@ -93,7 +93,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 			else
 			{
 				back1f[i+j*width] = 0.0f;
-				mask1s32[i+j*width] = ProbBack;
+				mask1s32[i+j*width] = TrimapUnknown;
 			}
 				
 		}
@@ -109,7 +109,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 				mask1s32[i+j*width] = UserFore;
 			}
 			else
-				back1f[i+j*width] = 0.0f;
+				fore1f[i+j*width] = 0.0f;
 		}
 	// temp unary
 	float * unary2f = new float[size*2];
@@ -134,12 +134,12 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 	crf.setUnaryEnergy(unary2f);
 	float* prob = crf.binarySeg(4, 1.f);
 	for(int i=0; i<size; i++, prob+=2)
-		back1f[i] = prob[1]/(prob[0]+prob[1]+1e-20f);
+		fore1f[i] = prob[1]/(prob[0]+prob[1]+1e-20f);
 
 	/****** Result ******/
 	for(int i=0; i<size; i++)
 	{
-		mask1u8[i] = back1f[i]>0.5? MaskFG:MaskBG;
+		mask1u8[i] = fore1f[i]>0.5? MaskFG:MaskBG;
 		//mask1u8[i] = mask1s32[i]==(int)UserBack?MaskBG:MaskFG;
 	}
 
@@ -151,7 +151,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 	delete []mask1s32;
 	
 	
-	return mask1u8[10];
+	return 0;
 	#else
 	return 0;
 	#endif

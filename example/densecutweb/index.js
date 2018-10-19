@@ -1,7 +1,6 @@
 
 var drag = false;
 var rect = {};
-var canvas1;
 var canvas2;
 var IsFG = true;
 
@@ -18,17 +17,17 @@ setCallbacks();
 
 function setCallbacks() {
   var inputElement = document.getElementById("my-file");
-  canvas1 = document.getElementById("canvas1");
+  canvas = document.getElementById("canvas1");
 
   inputElement.addEventListener("change", onLoadImage, false);
 
-  canvas1.addEventListener("mouseup", onMouseUp, false);
-  canvas1.addEventListener("mousedown", onMouseDown, false);
-  canvas1.addEventListener("mousemove", onMouseMove, false);
+  canvas.addEventListener("mouseup", onMouseUp, false);
+  canvas.addEventListener("mousedown", onMouseDown, false);
+  canvas.addEventListener("mousemove", onMouseMove, false);
 }
 
 function getMousePos(evt) {
-  var rect = canvas1.getBoundingClientRect();
+  var rect = canvas.getBoundingClientRect();
   return {
     x: evt.clientX - rect.left,
     y: evt.clientY - rect.top
@@ -44,7 +43,7 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
-  var canvas=document.getElementById("canvas1");
+  //var canvas=document.getElementById("canvas1");
   var cxt=canvas.getContext("2d")
   if(drag)
   {
@@ -93,52 +92,20 @@ function onMouseMove(e) {
 
 function clearFg()
 {
-  clone_image = original_image.clone();
-  show_image(clone_image, "canvas1");
+  var ctx = canvas.getContext('2d');
+  imgData.data.set(cloneData.data);
+  ctx.putImageData(imgData, 0, 0);
+
 }
-
-function show_image(mat, canvas_id) {
-  var data = mat.data(); // output is a Uint8Array that aliases directly into the Emscripten heap
-
-  channels = mat.channels();
-  channelSize = mat.elemSize1();
-
-  var canvas = document.getElementById(canvas_id);
-
-  ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  canvas.width = mat.cols;
-  canvas.height = mat.rows;
-
-  imdata = ctx.createImageData(mat.cols, mat.rows);
-
-  for (var i = 0, j = 0; i < data.length; i += channels, j += 4) {
-    imdata.data[j] = data[i];
-    imdata.data[j + 1] = data[i + 1 % channels];
-    imdata.data[j + 2] = data[i + 2 % channels];
-    imdata.data[j + 3] = 255;
-  }
-  ctx.putImageData(imdata, 0, 0);
-}
-
 
 
 function onLoadImage(e) {
-  var fileReturnPath = document.getElementsByClassName('form-control');
+  //var fileReturnPath = document.getElementsByClassName('form-control');
 
   canvas = document.getElementById('canvas1');
   var canvasWidth = 500;
   var canvasHeight = 500;
   var ctx = canvas.getContext('2d');
-
-  // if (original_image) {
-  //   // clear data first
-  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //   var canvas2 = document.getElementById('canvas2');
-  //   var ctx2 = canvas2.getContext('2d');
-  //   ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-  // }
 
   var url = URL.createObjectURL(e.target.files[0]);
   var img = new Image();
@@ -165,6 +132,8 @@ function switchFgBg()
 function Segment()
 {
     var canvas2 = document.getElementById('canvas2');
+    canvas2.width = canvas.width;
+    canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
     var res = ctx2.createImageData(canvas.width, canvas.height);
     var mask = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
@@ -172,13 +141,8 @@ function Segment()
     Module.HEAPU8.set(imgData.data, buf);
 
     res.data.set(cloneData.data);
-
-    console.log(imgData);
-    console.log(cloneData);
-    console.log(mask);
-    console.log(buf);
     
-    var aa = Module._process(buf, mask, canvas.width, canvas.height);
+    Module._process(buf, mask, canvas.width, canvas.height);
 
     for(var y=0; y<canvas.height; y++)
       for(var x=0; x<canvas.width; x++)
@@ -190,64 +154,9 @@ function Segment()
         }
           
       }
+    console.log("done");
 
-    console.log(aa);
-    console.log(Module.getValue(mask+10, "i8"));
     ctx2.putImageData(res, 0, 0);
     Module._free(buf);
     Module._free(mask);
 }
-/*
-function grabCut() {
-  var result = new cv.Mat();
-  var bgdModel = new cv.Mat();
-  var fgdModel = new cv.Mat();
-  var roiRect = new cv.Rect(0,0,0,0);
-  var maskdata = mask.data();
-  var clonedata = clone_image.data();
-  let step = 3 * mask.cols;
-
-  // could be improved ....
-  for (var x = 0; x < mask.rows; x++) {
-    for (var y = 0; y < mask.cols; y++) {
-      if (clonedata[x * step + 3 * y]==0&&clonedata[x * step + 3 * y + 1]==0&&clonedata[x * step + 3 * y + 2]==255) {
-        maskdata[x*mask.cols + y] = 1;
-      }
-      else if (clonedata[x * step + 3 * y]==0&&clonedata[x * step + 3 * y + 1]==255&&clonedata[x * step + 3 * y + 2]==0) 
-      {
-        maskdata[x*mask.cols + y] = 0;
-      }
-      else
-      {
-        maskdata[x*mask.cols + y] = 2;
-      }
-    }
-  }
-  
-  //var roiRect = new cv.Rect(rect.startX, rect.startY, rect.w, rect.h);
-  //cv.grabCut(original_image, result, roiRect, bgdModel, fgdModel, 1, cv.GrabCutModes.GC_INIT_WITH_RECT.value);
-  cv.grabCut(original_image, mask, roiRect, bgdModel, fgdModel, 1, cv.GrabCutModes.GC_INIT_WITH_MASK.value);
-  var fg = original_image.clone();
-  var view = fg.data();
-  let rstep = 3 * mask.cols;
-  // could be improved ....
-  for (var x = 0; x < mask.rows; x++) {
-    for (var y = 0; y < mask.cols; y++) {
-      var category = mask.get_uchar_at(x, y);
-      if (category == cv.GrabCutClasses.GC_BGD.value || category == cv.GrabCutClasses.GC_PR_BGD.value) {
-        view[x * rstep + 3 * y] = 255;
-        view[x * rstep + 3 * y + 1] = 255;
-        view[x * rstep + 3 * y + 2] = 255;
-        //view[x * step + 3 * y + 3] = 128;
-      }
-    }
-  }
-  show_image(fg, "canvas2");
-}
-
-function downloadImage() {
-  var a = document.getElementById("download");
-  a.href = document.getElementById("canvas2").toDataURL();
-  a.download = 'screenshot.png';
-}
-*/
