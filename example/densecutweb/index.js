@@ -105,8 +105,8 @@ function onLoadImage(e) {
   //var fileReturnPath = document.getElementsByClassName('form-control');
 
   canvas = document.getElementById('canvas1');
-  var canvasWidth = 500;
-  var canvasHeight = 500;
+  var canvasWidth = 600;
+  var canvasHeight = 600;
   var ctx = canvas.getContext('2d');
 
   var url = URL.createObjectURL(e.target.files[0]);
