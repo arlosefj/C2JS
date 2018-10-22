@@ -13,6 +13,8 @@ let Radius = 5;
 let MaskBG = 126;
 let MaskFG = 127;
 
+var segimgname = "segment.png";
+
 setCallbacks();
 
 function setCallbacks() {
@@ -108,6 +110,7 @@ function onLoadImage(e) {
   var ctx = canvas.getContext('2d');
 
   var url = URL.createObjectURL(e.target.files[0]);
+  segimgname = e.target.files[0].name+".png";
   var img = new Image();
   img.onload = function() {
     scaleFactor = Math.min((canvasWidth / img.width), (canvasHeight / img.height));
@@ -121,12 +124,24 @@ function onLoadImage(e) {
   img.src = url;
 }
 
-function switchFgBg()
+function switchFg()
 {
-  if(IsFG)
-    IsFG = false;
-  else
     IsFG = true;
+}
+
+function switchBg()
+{
+    IsFG = false;
+}
+
+function downloadImage()
+{
+    var dlcanvas = document.getElementById("canvas2");
+    var dlimg    = dlcanvas.toDataURL("image/png");
+    var download = document.createElement('a');
+    download.href = dlimg; //'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
+    download.download = segimgname;
+    download.click();
 }
 
 function Segment()
@@ -154,7 +169,6 @@ function Segment()
         }
           
       }
-    console.log("done");
 
     ctx2.putImageData(res, 0, 0);
     Module._free(buf);

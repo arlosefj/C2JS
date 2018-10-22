@@ -38,7 +38,11 @@
             <div class="col-md-6">
               <label class="btn btn-primary">Add Image<input class="input-file" id="my-file" type="file" style="display: none;"></label>
             </div>
-            <div class="col-md-5"> <button onClick="switchFgBg()" class="btn btn-primary" type="button">Switch</button></div>
+            <div class="col-md-6">
+              <form name=bgfg>
+              <input type="radio" name=setbgfg value="FG" onclick="switchFg()" checked>FG
+              <input type="radio" name=setbgfg value="BG" onclick="switchBg()">BG
+              </form></div>
             <div class="col-md-2"><button onClick="clearFg()" class="btn btn-primary" type="button">Clear</button></div>
             <div class="col-md-2"><button onClick="Segment()" class="btn btn-success" type="button">Extract foreground</button></div>
           </div>
