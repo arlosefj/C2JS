@@ -19,7 +19,7 @@ float w2 = 10;
 float w3 = 2; 
 float alpha = 20;
 float beta = 33;
-float gama = 3; 
+float gama = 10; //3 
 float mu = 41;
 double maxWeight = 2;
 

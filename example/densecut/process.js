@@ -7483,7 +7483,7 @@ function _process($0,$1,$2,$3) {
  __ZN10DenseCRF2DC2Eiii($24,$302,$303,2);
  $304 = $10;
  __ZN10DenseCRF2D20addPairwiseBilateralEfffffPKhfPK18SemiMetricFunction($24,20.0,20.0,33.0,33.0,33.0,$304,6.0,0);
- __ZN10DenseCRF2D19addPairwiseGaussianEfffPK18SemiMetricFunction($24,3.0,3.0,10.0,0);
+ __ZN10DenseCRF2D19addPairwiseGaussianEfffPK18SemiMetricFunction($24,10.0,10.0,10.0,0);
  $305 = $10;
  __ZN10DenseCRF2D24addPairwiseColorGaussianEfffPKhfPK18SemiMetricFunction($24,41.0,41.0,41.0,$305,2.0,0);
  $306 = $20;
