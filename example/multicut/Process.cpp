@@ -56,10 +56,11 @@ void fitGMMs(float * img3f, float * back1f, float * unary2f, int * mask1s32, CmG
 	return ;
 }
 
-const uint8 MaskFG = 126;
+//const uint8 MaskFG = 126;
 const uint8 MaskBG = 127;
+const uint8 MaskDefault = 255;
 
-int process(uint8 * img4u8, uint8 * mask1u8, int width, int height, int num, int gama)
+int process(uint8 * img4u8, uint8 * mask1u8, int width, int height, int num, uint8 * masklist, int gama)
 {
 	#if 1
 	/****** Preprocess ******/
@@ -92,7 +93,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height, int num, int
 			for(int i=0; i<width; i++)
 			{
 				label=img4u8[i*4+3+j*width*4];
-				if(label==MaskBG||(label>MaskFG-num&&label<=MaskFG&&label!=MaskFG-k))
+				if(label==MaskBG||(label!=MaskDefault&&label!=masklist[k]))
 				{
 					back1f[i+j*width] = 1.0f;
 					mask1s32[i+j*width] = UserBack;
@@ -103,7 +104,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height, int num, int
 					mask1s32[i+j*width] = TrimapUnknown;
 				}
 				// temp segment val usr labeled background 0 other 1 
-				if(label==(MaskFG-k))
+				if(label==(masklist[k]))
 				{
 					fore1f[i+j*width] = 1.0f;
 					mask1s32[i+j*width] = UserFore;
@@ -141,11 +142,11 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height, int num, int
 			for(int i=0; i<width; i++)
 			{
 				if(fore1f[i+j*width]>0.5&&mask1u8[i+j*width]==MaskBG)
-					mask1u8[i+j*width] = MaskFG-k;
+					mask1u8[i+j*width] = masklist[k];
 				if(img4u8[i*4+3+j*width*4]==MaskBG)
 					mask1u8[i+j*width] = MaskBG;
 				if(mask1s32[i+j*width] == UserFore)
-					mask1u8[i+j*width] = MaskFG-k;
+					mask1u8[i+j*width] = masklist[k];
 				//mask1u8[i] = mask1s32[i]==(int)UserBack?MaskBG:MaskFG;
 			}
 	}

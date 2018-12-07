@@ -3,7 +3,7 @@ var drag = false;
 var rect = {};
 var canvas2;
 var IsFG = true;
-var index = 0;
+var index = 100;
 
 var scaleFactor;
 var imgData;
@@ -12,7 +12,7 @@ var cloneData;
 
 let Radius = 5;
 let MaskBG = 127;
-let MaskFG = 126;
+//let MaskFG = 126;
 
 var segimgname = "segment.png";
 
@@ -54,11 +54,11 @@ function onMouseMove(e) {
     if(IsFG){
       cxt.beginPath();
       cxt.arc(mousePos.x,mousePos.y,Radius,0,360,false);
-      if(index==0)
+      if(index==100)
       {
         cxt.fillStyle="green";
       }
-      else if(index==1)
+      else if(index==30)
       {
         cxt.fillStyle="red";
       }
@@ -75,7 +75,7 @@ function onMouseMove(e) {
           {
             var ii=Math.floor(Math.max(0, Math.min(mousePos.y+i,canvas.height-1)));
             var jj=Math.floor(Math.max(0, Math.min(mousePos.x+j,canvas.width-1)));
-            imgData.data[4*jj+ii*canvas.width*4+3] = (MaskFG-index);
+            imgData.data[4*jj+ii*canvas.width*4+3] = (index);
           }
             
         }
@@ -139,19 +139,19 @@ function onLoadImage(e) {
 function switchObj1()
 {
     IsFG = true;
-    index = 0;
+    index = 100;
 }
 
 function switchObj2()
 {
     IsFG = true;
-    index = 1;
+    index = 30;
 }
 
 function switchObj3()
 {
     IsFG = true;
-    index = 2;
+    index = 20;
 }
 
 function switchBg()
@@ -181,10 +181,20 @@ function Segment()
     Module.HEAPU8.set(imgData.data, buf);
     var gamma = 10;
     var num = 3;
+    var masklist = Module._malloc(num);   
+    
+    var tmp = new Uint8Array( num );
+    tmp[0] = 100;
+    tmp[1] = 30;
+    tmp[2] = 20;
+
+    Module.HEAPU8.set(tmp, masklist);
+    console.log(tmp);
+    
 
     res.data.set(cloneData.data);
     
-    Module._process(buf, mask, canvas.width, canvas.height, num, gamma);
+    Module._process(buf, mask, canvas.width, canvas.height, num, masklist, gamma);
 
     for(var y=0; y<canvas.height; y++)
       for(var x=0; x<canvas.width; x++)
@@ -194,21 +204,21 @@ function Segment()
         {
           res.data[4*x+y*canvas.width*4+3] = 0;
         }
-        else if(label==MaskFG)
+        else if(label==masklist[0])
         {
           res.data[4*x+y*canvas.width*4+0] = 0;
           res.data[4*x+y*canvas.width*4+1] = 255;
           res.data[4*x+y*canvas.width*4+2] = 0;
           res.data[4*x+y*canvas.width*4+3] = 255;
         }
-        else if(label==MaskFG-1)
+        else if(label==masklist[1])
         {
           res.data[4*x+y*canvas.width*4+0] = 255;
           res.data[4*x+y*canvas.width*4+1] = 0;
           res.data[4*x+y*canvas.width*4+2] = 0;
           res.data[4*x+y*canvas.width*4+3] = 255;
         }
-        else if(label==MaskFG-2)
+        else if(label==masklist[2])
         {
           res.data[4*x+y*canvas.width*4+0] = 0;
           res.data[4*x+y*canvas.width*4+1] = 0;
@@ -221,4 +231,5 @@ function Segment()
     ctx2.putImageData(res, 0, 0);
     Module._free(buf);
     Module._free(mask);
+    Module._free(masklist);
 }
