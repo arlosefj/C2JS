@@ -204,21 +204,21 @@ function Segment()
         {
           res.data[4*x+y*canvas.width*4+3] = 0;
         }
-        else if(label==masklist[0])
+        else if(label==tmp[0])
         {
           res.data[4*x+y*canvas.width*4+0] = 0;
           res.data[4*x+y*canvas.width*4+1] = 255;
           res.data[4*x+y*canvas.width*4+2] = 0;
           res.data[4*x+y*canvas.width*4+3] = 255;
         }
-        else if(label==masklist[1])
+        else if(label==tmp[1])
         {
           res.data[4*x+y*canvas.width*4+0] = 255;
           res.data[4*x+y*canvas.width*4+1] = 0;
           res.data[4*x+y*canvas.width*4+2] = 0;
           res.data[4*x+y*canvas.width*4+3] = 255;
         }
-        else if(label==masklist[2])
+        else if(label==tmp[2])
         {
           res.data[4*x+y*canvas.width*4+0] = 0;
           res.data[4*x+y*canvas.width*4+1] = 0;
