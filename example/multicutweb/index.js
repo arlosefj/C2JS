@@ -200,10 +200,12 @@ function Segment()
       for(var x=0; x<canvas.width; x++)
       {
         var label = Module.getValue(mask+x+y*canvas.width, "i8");
+        /*
         if(label==MaskBG)
         {
           res.data[4*x+y*canvas.width*4+3] = 0;
         }
+        
         else if(label==tmp[0])
         {
           res.data[4*x+y*canvas.width*4+0] = 0;
@@ -225,7 +227,7 @@ function Segment()
           res.data[4*x+y*canvas.width*4+2] = 255;
           res.data[4*x+y*canvas.width*4+3] = 255;
         }
-          
+        */
       }
 
     ctx2.putImageData(res, 0, 0);
