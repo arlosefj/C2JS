@@ -69,7 +69,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 
 	for(int j=0; j<height; j++)
 		for(int i=0; i<width; i++)
-			if(img4u8[i*4+3+j*width*4]==MaskBG)
+			if(img4u8[i*4+3+j*width*4]==MaskBG||img4u8[i*4+3+j*width*4]==MaskFG)
 			{
 				if(i<RoiX0) RoiX0=i;
 				if(i>RoiX1) RoiX1=i;
