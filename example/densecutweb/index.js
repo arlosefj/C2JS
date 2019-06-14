@@ -174,3 +174,159 @@ function Segment()
     Module._free(buf);
     Module._free(mask);
 }
+
+// 1 2 3
+// 0   4
+// 7 6 5
+function getIdx(x, y, lastx, lasty)
+{
+
+  var diffx = lastx-x;
+  var diffy = lasty-y;
+  if(lastx==-1)
+    return 1;
+  if(diffx==-1)
+  {
+    if(diffy == 0)
+      return 0;
+    if(diffy == -1)
+      return 1;
+    if(diffy == 1)
+      return 7;
+  }
+  if(diffx==0)
+  {
+    if(diffy == -1)
+      return 2;
+    if(diffy == 1)
+      return 6;
+  }
+  if(diffx==1)
+  {
+    if(diffy == 0)
+      return 4;
+    if(diffy == -1)
+      return 3;
+    if(diffy == 1)
+      return 5;
+  }
+  return -1;
+}
+
+var circlex = [-1, -1, 0, 1, 1, 1, 0, -1, -1, -1, 0, 1, 1, 1, 0, -1];
+var circley = [0, -1, -1, -1, 0, 1, 1, 1, 0, -1, -1, -1, 0, 1, 1, 1];
+
+function nextContourPoint(x, y, lastx, lasty, mask, width, height)
+{
+  var point = [0,0];
+  var l = Module.getValue(mask+x-1+y*width, "i8");
+  var r = Module.getValue(mask+x+1+y*width, "i8");
+  var u = Module.getValue(mask+x+(y-1)*width, "i8");
+  var d = Module.getValue(mask+x+(y+1)*width, "i8");
+  var lu = Module.getValue(mask+x-1+(y-1)*width, "i8");
+  var ru = Module.getValue(mask+x+1+(y-1)*width, "i8");
+  var ld = Module.getValue(mask+x-1+(y+1)*width, "i8");
+  var rd = Module.getValue(mask+x+1+(y+1)*width, "i8");
+  var labels = [l, lu, u, ru, r, rd, d, ld, l, lu, u, ru, r, rd, d, ld];
+  var lastidx = getIdx(x, y, lastx, lasty);
+  for(var i=lastidx+1; i<lastidx+7; i++)
+  {
+    if(labels[i]==MaskFG)
+    {
+      point = [x+circlex[i], y+circley[i]];
+      break;
+    }
+  }
+  return point;
+}
+
+function getContour()
+{
+  var canvas2 = document.getElementById('canvas2');
+    canvas2.width = canvas.width;
+    canvas2.height = canvas.height;
+    var ctx2 = canvas2.getContext('2d');
+    var res = ctx2.createImageData(canvas.width, canvas.height);
+    var mask = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+    var buf = Module._malloc(imgData.data.length*imgData.data.BYTES_PER_ELEMENT);
+    Module.HEAPU8.set(imgData.data, buf);
+
+    res.data.set(cloneData.data);
+    
+    Module._process(buf, mask, canvas.width, canvas.height);
+
+    // var simplify = require('simplify-geometry');
+    var linestring = [];
+    //linestring.push([0,0]);
+    //linestring.push([2,3]);
+    //linestring.push([5,0]);
+    // [[0,0], [2.5,3], [5,0]];
+    
+    //console.log(simplifyGeometry(linestring, 3));
+
+    var fx, fy;
+
+    for(var y=canvas.height-1; y>=0; y--)
+      for(var x=canvas.width-1; x>=0; x--)
+      {
+        res.data[4*x+y*canvas.width*4+3] = 0;
+        var label = Module.getValue(mask+x+y*canvas.width, "i8");
+        if(label==MaskFG)
+        {
+          fx = x;
+          fy = y;
+        }
+      }
+
+    linestring.push([fx,fy]);
+    console.log(fx, fy);
+
+    var nextx = -1;
+    var nexty = -1;
+    var curx = fx;
+    var cury = fy;
+    var lastx = -1;
+    var lasty = -1;
+    width = canvas.width;
+    height = canvas.height;
+    var count = 0;
+
+    while(nextx!=fx || nexty!=fy)
+    {
+      newpoint = nextContourPoint(curx, cury, lastx, lasty, mask, width, height);
+      nextx = newpoint[0];
+      nexty = newpoint[1];
+      lastx = curx;
+      lasty = cury;
+      curx = nextx;
+      cury = nexty;
+      linestring.push(newpoint);
+      count = count+1;
+      console.log(count, newpoint);
+    }
+    console.log("newpoints:");
+    console.log(simplifyGeometry(linestring, 3));
+
+    for(var y=1; y<canvas.height-1; y++)
+      for(var x=1; x<canvas.width-1; x++)
+      {
+        var label0 = Module.getValue(mask+x+y*canvas.width, "i8");
+        var labell = Module.getValue(mask+x-1+y*canvas.width, "i8");
+        var labelr = Module.getValue(mask+x+1+y*canvas.width, "i8");
+        var labelu = Module.getValue(mask+x+(y-1)*canvas.width, "i8");
+        var labeld = Module.getValue(mask+x+(y+1)*canvas.width, "i8");
+
+        if(label0!=labell || label0!=labelr || label0!=labelu || label0!=labeld)
+        {
+          res.data[4*x+y*canvas.width*4+0] = 255;
+          res.data[4*x+y*canvas.width*4+1] = 0;
+          res.data[4*x+y*canvas.width*4+2] = 0;
+          res.data[4*x+y*canvas.width*4+3] = 255;
+        }
+          
+      }
+
+    ctx2.putImageData(res, 0, 0);
+    Module._free(buf);
+    Module._free(mask);
+}

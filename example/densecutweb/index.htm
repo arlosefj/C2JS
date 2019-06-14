@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="index.css">
   <script src="lib/jquery/jquery-3.2.0.min.js"></script>
   <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+  <script src="simplifygeometry-0.0.2.min.js"></script>
   <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <script async defer src="process.js"></script>
   <script defer src="index.js"></script>
@@ -44,16 +45,17 @@
               <input type="radio" name=setbgfg value="BG" onclick="switchBg()">BG
               </form></div>
             <div class="col-md-2"><button onClick="clearFg()" class="btn btn-primary" type="button">Clear</button></div>
-            <div class="col-md-2"><button onClick="Segment()" class="btn btn-success" type="button">Extract foreground</button></div>
+            <div class="col-md-2"><button onClick="Segment()" class="btn btn-success" type="button">Foreground</button></div>
+            <div class="col-md-2"><button onClick="getContour()" class="btn btn-success" type="button">Contours</button></div>
           </div>
         </p>
-        <canvas id="canvas1" width="600" height="600"></canvas>
+        <canvas id="canvas1" width="500" height="500"></canvas>
 
       </div>
       <div class="col-md-6">
         <h2>Result</h2>
         <p><button class="btn btn-primary" type="button" onClick="downloadImage()"> <a id='download'>Download</a></button></p>
-        <canvas id="canvas2" width="600" height="600"></canvas>
+        <canvas id="canvas2" width="500" height="500"></canvas>
       </div>
     </div>
 </body>
