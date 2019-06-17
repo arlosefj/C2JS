@@ -268,7 +268,8 @@ function drawrect(x, y, data, width, height, rsize)
 
 function getContour()
 {
-  var canvas2 = document.getElementById('canvas2');
+    var strenth = 3;
+    var canvas2 = document.getElementById('canvas2');
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -329,7 +330,7 @@ function getContour()
       console.log(count, newpoint);
     }
     console.log("newpoints:");
-    var newpoints = simplifyGeometry(linestring, 3);
+    var newpoints = simplifyGeometry(linestring, strenth);
     console.log(newpoints);
     console.log(newpoints.length)
 
