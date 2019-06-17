@@ -218,7 +218,7 @@ var circley = [0, -1, -1, -1, 0, 1, 1, 1, 0, -1, -1, -1, 0, 1, 1, 1];
 
 function nextContourPoint(x, y, lastx, lasty, mask, width, height)
 {
-  var point = [0,0];
+  var point = [-1,-1];
   var l = Module.getValue(mask+x-1+y*width, "i8");
   var r = Module.getValue(mask+x+1+y*width, "i8");
   var u = Module.getValue(mask+x+(y-1)*width, "i8");
@@ -238,6 +238,32 @@ function nextContourPoint(x, y, lastx, lasty, mask, width, height)
     }
   }
   return point;
+}
+
+function drawrect(x, y, data, width, height, rsize)
+{
+  
+  for(var i=-1*rsize; i<=rsize; i++)
+  {
+    data[4*(x+i)+(y-rsize)*width*4+0] = 0;
+    data[4*(x+i)+(y-rsize)*width*4+1] = 255;
+    data[4*(x+i)+(y-rsize)*width*4+2] = 0;
+    data[4*(x+i)+(y-rsize)*width*4+3] = 255;
+    data[4*(x+i)+(y+rsize)*width*4+0] = 0;
+    data[4*(x+i)+(y+rsize)*width*4+1] = 255;
+    data[4*(x+i)+(y+rsize)*width*4+2] = 0;
+    data[4*(x+i)+(y+rsize)*width*4+3] = 255;
+
+    data[4*(x+rsize)+(y+i)*width*4+0] = 0;
+    data[4*(x+rsize)+(y+i)*width*4+1] = 255;
+    data[4*(x+rsize)+(y+i)*width*4+2] = 0;
+    data[4*(x+rsize)+(y+i)*width*4+3] = 255;
+    data[4*(x-rsize)+(y+i)*width*4+0] = 0;
+    data[4*(x-rsize)+(y+i)*width*4+1] = 255;
+    data[4*(x-rsize)+(y+i)*width*4+2] = 0;
+    data[4*(x-rsize)+(y+i)*width*4+3] = 255;
+  }
+  
 }
 
 function getContour()
@@ -296,6 +322,8 @@ function getContour()
       newpoint = nextContourPoint(curx, cury, lastx, lasty, mask, width, height);
       nextx = newpoint[0];
       nexty = newpoint[1];
+      if(nextx==-1)
+        break;
       lastx = curx;
       lasty = cury;
       curx = nextx;
@@ -305,7 +333,9 @@ function getContour()
       console.log(count, newpoint);
     }
     console.log("newpoints:");
-    console.log(simplifyGeometry(linestring, 3));
+    var newpoints = simplifyGeometry(linestring, 3);
+    console.log(newpoints);
+    console.log(newpoints.length)
 
     for(var y=1; y<canvas.height-1; y++)
       for(var x=1; x<canvas.width-1; x++)
@@ -325,6 +355,13 @@ function getContour()
         }
           
       }
+    
+    var length = newpoints.length;
+    for(var i=0; i<length; i++)
+    {
+      drawrect(newpoints[i][0], newpoints[i][1], res.data, canvas.width, canvas.height, 3);
+    }
+    
 
     ctx2.putImageData(res, 0, 0);
     Module._free(buf);

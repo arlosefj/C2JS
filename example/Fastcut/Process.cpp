@@ -86,6 +86,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 	// image data as float
 	float * img3f = new float[RoiSize*3]; 
 	uint8 * img3u8 = new uint8[RoiSize*3];
+	uint8 * img1u8tmp = new uint8[size];
 	for(int j=0; j<RoiH; j++)
 		for(int i=0; i<RoiW; i++)
 		{
@@ -160,17 +161,36 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 	for(int j=0; j<height; j++)
 		for(int i=0; i<width; i++)
 		{
+			mask1u8[i+j*width]=MaskBG;
 			if(i<RoiX0 || i>=RoiX1 || j<RoiY0 || j>RoiY1)
-				mask1u8[i+j*width] = MaskBG;
+				img1u8tmp[i+j*width] = MaskBG;
 			else
 			{
-				mask1u8[i+j*width] = fore1f[(i-RoiX0)+(j-RoiY0)*RoiW]>0.5? MaskFG:MaskBG;
+				img1u8tmp[i+j*width] = fore1f[(i-RoiX0)+(j-RoiY0)*RoiW]>0.5? MaskFG:MaskBG;
 				if(mask1s32[(i-RoiX0)+(j-RoiY0)*RoiW] == UserBack)
-					mask1u8[i+j*width] = MaskBG;
+					img1u8tmp[i+j*width] = MaskBG;
 				if(mask1s32[(i-RoiX0)+(j-RoiY0)*RoiW] == UserFore)
-					mask1u8[i+j*width] = MaskFG;
+					img1u8tmp[i+j*width] = MaskFG;
 			}
 		}
+	// 膨胀
+	for(int j=1; j<height-1; j++)
+		for(int i=1; i<width-1; i++)
+		{
+			if(img1u8tmp[i+j*width]==MaskFG)
+			{
+				mask1u8[i-1+(j-1)*width]=MaskFG;
+				mask1u8[i-1+(j)*width]=MaskFG;
+				mask1u8[i-1+(j+1)*width]=MaskFG;
+				mask1u8[i+(j-1)*width]=MaskFG;
+				mask1u8[i+(j)*width]=MaskFG;
+				mask1u8[i+(j+1)*width]=MaskFG;
+				mask1u8[i+1+(j-1)*width]=MaskFG;
+				mask1u8[i+1+(j)*width]=MaskFG;
+				mask1u8[i+1+(j+1)*width]=MaskFG;
+			}
+		}
+
 
 	delete []img3f;
 	delete []back1f;
@@ -178,6 +198,7 @@ int process(uint8 * img4u8, uint8 * mask1u8, int width, int height)
 	delete []unary2f;
 	delete []img3u8;
 	delete []mask1s32;
+	delete []img1u8tmp;
 	
 	
 	return 0;
